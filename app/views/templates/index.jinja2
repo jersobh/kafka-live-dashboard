@@ -1,12 +1,28 @@
+<!DOCTYPE HTML>
+<html>
 <head>
 
 </head>
 
 <body>
 <div id="msgs"></div>
-
+<canvas id="myChart"></canvas>
 
 <script>
+function convert(unixtimestamp){
+ var months_arr = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+ var date = new Date(unixtimestamp);
+ var year = date.getFullYear();
+ var month = months_arr[date.getMonth()];
+ var day = date.getDate();
+ var hours = date.getHours();
+ var minutes = "0" + date.getMinutes();
+ var seconds = "0" + date.getSeconds();
+ var convdataTime = day+'-'+month+'-'+year+' '+hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
+ return convdataTime
+ }
+window.onload = function () {
+
 let socket = new WebSocket("ws://localhost:8000/ws");
 
 socket.onopen = function(e) {
@@ -18,7 +34,10 @@ socket.onmessage = function(event) {
   console.log(event.data)
   data = JSON.parse(event.data)
   message = JSON.parse(data.msg)
-  msgs.innerHTML += '<div>type:'+message.type+'<br />value: '+message.value+' </div><br />'
+  time = convert(data.time)
+
+  addData(chart, time, message.value)
+  //msgs.innerHTML += '<div>type:'+message.type+'<br />value: '+message.value+' </div><br />'
 };
 
 socket.onclose = function(event) {
@@ -35,5 +54,58 @@ socket.onerror = function(error) {
   alert(`[error] ${error.message}`);
 };
 
+var ctx = document.getElementById('myChart').getContext('2d');
+var chart = new Chart(ctx, {
+    // The type of chart we want to create
+    type: 'line',
+
+    // The data for our dataset
+    data: {
+        labels: [],
+        datasets: [{
+            label: 'Sales',
+            backgroundColor: 'rgb(255, 99, 132)',
+            borderColor: 'rgb(255, 99, 132)',
+            data: []
+        }]
+    },
+
+    // Configuration options go here
+    options: {
+        responsive: true,
+        scales: {
+            yAxes: [{
+                id:'main-axis',
+                }],
+            xAxes: [{
+                id: 'main-x-axis',
+                ticks: {
+                    maxTicksLimit: 20
+                }
+            }]
+        }
+    }
+});
+
+function addData(chart, label, data) {
+    chart.data.labels.push(label);
+    chart.data.datasets.forEach((dataset) => {
+        dataset.data.push(data);
+        if (dataset.data.length >= 100) {
+            dataset.data.shift();
+            chart.data.labels.shift();
+        }
+    });
+
+    chart.update();
+}
+
+}
+
+
 </script>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
+
 </body>
+</html>

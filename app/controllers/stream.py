@@ -41,7 +41,7 @@ async def receive_msg():
 async def produce():
     try:
         while True:
-            await asyncio.sleep(3)
+            await asyncio.sleep(5)
             await send_msg()
     except asyncio.CancelledError:
         print('Cancel consumer: close connections')
@@ -51,7 +51,7 @@ async def produce():
 async def consume():
     try:
         while True:
-            await asyncio.sleep(3)
+            await asyncio.sleep(5)
             data = await receive_msg()
             for ws in clients:
                 await ws.send_str(json.dumps(data))
