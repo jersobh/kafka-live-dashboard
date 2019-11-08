@@ -66,15 +66,19 @@ async def ws_handler(request):
     await ws.prepare(request)
     if ws not in clients:
         clients.append(ws)
-
-    async for msg in ws:
-        if msg.type == aiohttp.WSMsgType.TEXT:
-            if msg.data == 'close':
-                await ws.close()
-        elif msg.type == aiohttp.WSMsgType.ERROR:
-            print('ws connection closed with exception %s' %
-                  ws.exception())
-
-    print('websocket connection closed')
-
+    try:
+        async for msg in ws:
+            if msg.type == aiohttp.WSMsgType.TEXT:
+                if msg.data == 'close':
+                    await ws.close()
+                    clients.remove(ws)
+            elif msg.type == aiohttp.WSMsgType.CLOSED:
+                break
+            elif msg.type == aiohttp.WSMsgType.ERROR:
+                break
+    except asyncio.CancelledError:
+        clients.remove(ws)
+    finally:
+        clients.remove(ws)
+        await ws.close()
     return ws
