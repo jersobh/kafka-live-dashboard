@@ -1,0 +1,8 @@
+aiohttp
+aiokafka
+gunicorn
+xxhash
+lz4tools
+aiohttp_cors
+motor
+aiohttp_jinja2

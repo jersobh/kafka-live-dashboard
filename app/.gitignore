@@ -1,0 +1,6 @@
+core/__pycache__
+controllers/__pycache__
+views/__pycache__
+venv
+.idea
+__pycache__
